@@ -1,32 +1,60 @@
 server:
   port: 8080
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 spring:
   cloud:
     gateway:
-      routes:
-        - id: auth-service
-          uri: lb://auth-server
-          predicates:
-            - Path=/api/auth/**
+      server:
+        webflux:
 
-        - id: employee-service
-          uri: lb://employee-service
-          predicates:
-            - Path=/api/employee/**
+          globalcors:
+            add-to-simple-url-handler-mapping: true
 
-        - id: application-service
-          uri: lb://application-service
-          predicates:
-            - Path=/api/application/**
+            cors-configurations:
+              '[/**]':
+                allowedOrigins:
+                  - http://localhost:5173
+                  - http://localhost:3000
 
-        - id: housing-service
-          uri: lb://housing-service
-          predicates:
-            - Path=/api/housing/**
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
 
-        - id: email-service
-          uri: lb://email-service
-          predicates:
-            - Path=/api/email/**
-            
+                allowedHeaders:
+                  - "*"
+
+                allowCredentials: true
+
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+
+          routes:
+            - id: auth-server
+              uri: http://localhost:8081
+              predicates:
+                - Path=/auth/**
+
+            - id: employee-service
+              uri: lb://EMPLOYEE-SERVICE
+              predicates:
+                - Path=/employee/**
+
+            - id: application-service
+              uri: lb://APPLICATION-SERVICE
+              predicates:
+                - Path=/application/**
+
+            - id: housing-service
+              uri: lb://HOUSING-SERVICE
+              predicates:
+                - Path=/housing/**
